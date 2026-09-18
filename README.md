@@ -228,6 +228,16 @@ frame themselves, so no client code takes part.
 needs no secrets: GitHub authorises the deploy with a short-lived token minted
 for that run.
 
+Before uploading, it runs `deploy/stamp.mjs`, which appends `?v=<commit>` to the
+stylesheet and to every module. Pages sends `cache-control: max-age=600` on
+everything and offers no way to change it, so without this a returning player
+could run an old copy of the code, or worse, mix new code with a module left
+over from an earlier deploy. The word lists are left unstamped: they are 4.3MB
+and never change, so a new name would mean a pointless download every deploy.
+
+The script rewrites `public/` in place and is meant for CI. Run it on a working
+copy and you will have to undo it with `git checkout public`.
+
 Pages serves static files only, which shapes two things:
 
 - **Room links are `?room=ABCD`, not `/ABCD`.** There is no server to route an
