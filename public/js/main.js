@@ -14,7 +14,7 @@
 "use strict";
 
 import { Connection } from "./net.js";
-import { BASE_PATH } from "./config.js";
+import { BASE_PATH, roomPath } from "./config.js";
 import * as ui from "./ui.js";
 
 import {
@@ -485,7 +485,9 @@ connection.on("welcome", message => {
         token: message.you.token
     });
 
-    history.replaceState(null, "", `/${message.room.code}`);
+    /* Keep the base path. A bare "/CODE" is not a page that
+       GitHub Pages can serve, so reloading would 404. */
+    history.replaceState(null, "", roomPath(message.room.code));
 
     applyRoom(message.room);
 });

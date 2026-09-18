@@ -50,3 +50,17 @@ export const SERVER_HOST =
     and "/x/index.html" into "/x/".
 */
 export const BASE_PATH = location.pathname.replace(/[^/]*$/, "");
+
+
+/*
+    The address of a room, as a path.
+
+    Everything that writes a room address goes through here —
+    the share box and the address bar — so the two cannot drift
+    apart. Leaving out the base path produces a link that looks
+    right and 404s on Pages, which is exactly what happened
+    before this existed.
+*/
+export function roomPath(code) {
+    return `${BASE_PATH}?room=${encodeURIComponent(code)}`;
+}

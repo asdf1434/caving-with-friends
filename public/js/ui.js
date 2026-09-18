@@ -15,7 +15,7 @@ import {
     scoreBreakdown
 } from "./engine.js";
 
-import { BASE_PATH } from "./config.js";
+import { roomPath } from "./config.js";
 
 
 /* 1 -> "1st", 2 -> "2nd", and so on. */
@@ -302,7 +302,7 @@ export function renderLobby(state) {
         `${room.mode === "race" ? "Race" : "Shared board"}.`;
 
     element("share-link").value =
-        `${location.origin}${BASE_PATH}?room=${room.code}`;
+        location.origin + roomPath(room.code);
 
     const list = element("lobby-players");
 
