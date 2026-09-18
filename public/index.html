@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caving With Friends</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+<!-- =========================================================
+     HOME
+     ========================================================= -->
+
+<div id="home-view" class="view">
+
+    <div class="panel">
+
+        <h1>Caving With Friends</h1>
+
+        <p class="tagline">
+            Type words containing the given letters.
+            Example: CVG &rarr; CAVING
+        </p>
+
+        <label class="field">
+            <span>Your name</span>
+            <input id="name-input" maxlength="16" autocomplete="off"
+                   placeholder="Player">
+        </label>
+
+        <hr>
+
+        <h2>Start a room</h2>
+
+        <label class="field">
+            <span>Rule</span>
+            <select id="variant-select"></select>
+        </label>
+
+        <p id="variant-description" class="hint"></p>
+
+        <label class="field">
+            <span>Mode</span>
+            <select id="mode-select">
+                <option value="race">Race — same puzzles, own board</option>
+                <option value="shared">Shared — one board, steal to win</option>
+            </select>
+        </label>
+
+        <p id="mode-description" class="hint"></p>
+
+        <label class="field">
+            <span>Round length</span>
+            <select id="duration-select"></select>
+        </label>
+
+        <label class="field">
+            <span>Words</span>
+            <select id="words-select"></select>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="difficulty-toggle" type="checkbox" checked>
+            <span>Score harder puzzles higher</span>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="timedecay-toggle" type="checkbox" checked>
+            <span>Lose points as the round goes on</span>
+        </label>
+
+        <p class="hint">
+            With both off, every puzzle pays the same whenever
+            you solve it, and only being first matters.
+        </p>
+
+        <button id="create-button" class="primary">Create room</button>
+
+        <hr>
+
+        <h2>Join a room</h2>
+
+        <div class="join-row">
+            <input id="code-input" maxlength="4" autocomplete="off"
+                   placeholder="CODE" spellcheck="false">
+            <button id="join-button">Join</button>
+        </div>
+
+        <p id="home-error" class="error"></p>
+
+        <p id="loading-note" class="hint">Loading word lists&hellip;</p>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     LOBBY
+     ========================================================= -->
+
+<div id="lobby-view" class="view">
+
+    <div class="panel">
+
+        <h1>Room <span id="lobby-code"></span></h1>
+
+        <p id="lobby-setup" class="tagline"></p>
+
+        <div class="join-row">
+            <input id="share-link" readonly>
+            <button id="copy-link">Copy</button>
+        </div>
+
+        <label class="field">
+            <span>Rule</span>
+            <select id="lobby-variant"></select>
+        </label>
+
+        <label class="field">
+            <span>Mode</span>
+            <select id="lobby-mode">
+                <option value="race">Race — same puzzles, own board</option>
+                <option value="shared">Shared — one board, steal to win</option>
+            </select>
+        </label>
+
+        <label class="field">
+            <span>Round length</span>
+            <select id="lobby-duration"></select>
+        </label>
+
+        <label class="field">
+            <span>Words</span>
+            <select id="lobby-words"></select>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="lobby-difficulty" type="checkbox">
+            <span>Score harder puzzles higher</span>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="lobby-timedecay" type="checkbox">
+            <span>Lose points as the round goes on</span>
+        </label>
+
+        <p id="lobby-settings-note" class="hint"></p>
+
+        <h2>Players</h2>
+
+        <ul id="lobby-players" class="player-list"></ul>
+
+        <p id="lobby-status" class="hint"></p>
+
+        <button id="ready-button">I'm ready</button>
+        <button id="start-button" class="primary">Start game</button>
+
+        <p id="lobby-error" class="error"></p>
+
+        <button id="leave-button" class="quiet">Leave room</button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     GAME
+     ========================================================= -->
+
+<div id="game-view" class="view">
+
+    <div id="header">
+        <h1 id="game-title">Caving</h1>
+
+        <div id="stats">
+            <div id="score">0</div>
+            <div id="timer">0:00</div>
+            <button id="game-leave" class="quiet" type="button"
+                    tabindex="-1">Leave</button>
+        </div>
+    </div>
+
+    <div id="current-word-container">
+        <div id="current-word"></div>
+        <div id="message"></div>
+    </div>
+
+    <div id="game-body">
+        <div id="puzzles"></div>
+
+        <div id="scoreboard">
+            <div class="scoreboard-title">Scores</div>
+            <div id="scoreboard-legend" class="marks legend"></div>
+            <ul id="scoreboard-list"></ul>
+
+            <button id="refresh-button" type="button">New board</button>
+            <div id="refresh-note">Everyone has to agree. Scores reset.</div>
+        </div>
+    </div>
+
+    <div id="countdown-overlay">
+        <div id="countdown-number"></div>
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     RESULTS
+     ========================================================= -->
+
+<div id="results-view" class="view">
+
+    <div class="panel wide">
+
+        <h1>Final scores</h1>
+
+        <ol id="results-list" class="results-list"></ol>
+
+        <div class="results-actions">
+            <button id="share-button">Share</button>
+            <button id="again-button" class="primary">Play again</button>
+            <button id="results-leave" class="quiet">Leave room</button>
+        </div>
+
+        <p id="results-status" class="hint"></p>
+
+        <h2>Next round</h2>
+
+        <label class="field">
+            <span>Rule</span>
+            <select id="results-variant"></select>
+        </label>
+
+        <label class="field">
+            <span>Mode</span>
+            <select id="results-mode">
+                <option value="race">Race — same puzzles, own board</option>
+                <option value="shared">Shared — one board, steal to win</option>
+            </select>
+        </label>
+
+        <label class="field">
+            <span>Round length</span>
+            <select id="results-duration"></select>
+        </label>
+
+        <label class="field">
+            <span>Words</span>
+            <select id="results-words"></select>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="results-difficulty" type="checkbox">
+            <span>Score harder puzzles higher</span>
+        </label>
+
+        <label class="field checkbox-field">
+            <input id="results-timedecay" type="checkbox">
+            <span>Lose points as the round goes on</span>
+        </label>
+
+        <p id="results-settings-note" class="hint"></p>
+
+        <h2>The board</h2>
+
+        <div id="results-board"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MOBILE KEYBOARD
+
+     The game has no input element, so a phone would never
+     raise a keyboard on its own.
+     ========================================================= -->
+
+<div id="mobile-keyboard" aria-label="Keyboard">
+    <button type="button" class="mobile-key" data-key="Q">Q</button>
+    <button type="button" class="mobile-key" data-key="W">W</button>
+    <button type="button" class="mobile-key" data-key="E">E</button>
+    <button type="button" class="mobile-key" data-key="R">R</button>
+    <button type="button" class="mobile-key" data-key="T">T</button>
+    <button type="button" class="mobile-key" data-key="Y">Y</button>
+    <button type="button" class="mobile-key" data-key="U">U</button>
+    <button type="button" class="mobile-key" data-key="I">I</button>
+    <button type="button" class="mobile-key" data-key="O">O</button>
+    <button type="button" class="mobile-key" data-key="P">P</button>
+
+    <button type="button" class="mobile-key" data-key="A">A</button>
+    <button type="button" class="mobile-key" data-key="S">S</button>
+    <button type="button" class="mobile-key" data-key="D">D</button>
+    <button type="button" class="mobile-key" data-key="F">F</button>
+    <button type="button" class="mobile-key" data-key="G">G</button>
+    <button type="button" class="mobile-key" data-key="H">H</button>
+    <button type="button" class="mobile-key" data-key="J">J</button>
+    <button type="button" class="mobile-key" data-key="K">K</button>
+    <button type="button" class="mobile-key" data-key="L">L</button>
+    <button type="button" class="mobile-key backspace" data-key="BACKSPACE">&#9003;</button>
+
+    <button type="button" class="mobile-key" data-key="Z">Z</button>
+    <button type="button" class="mobile-key" data-key="X">X</button>
+    <button type="button" class="mobile-key" data-key="C">C</button>
+    <button type="button" class="mobile-key" data-key="V">V</button>
+    <button type="button" class="mobile-key" data-key="B">B</button>
+    <button type="button" class="mobile-key" data-key="N">N</button>
+    <button type="button" class="mobile-key" data-key="M">M</button>
+    <button type="button" class="mobile-key enter" data-key="ENTER">ENTER</button>
+</div>
+
+
+<div id="connection-warning">Reconnecting&hellip;</div>
+
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

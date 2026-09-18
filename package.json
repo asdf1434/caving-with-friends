@@ -1,0 +1,19 @@
+{
+  "name": "caving-with-friends",
+  "version": "0.1.0",
+  "description": "Multiplayer fork of trangium's Blackjack Caving",
+  "type": "module",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "test": "node --test \"test/*.test.js\"",
+    "serve": "python3 -m http.server 3000 --directory public"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

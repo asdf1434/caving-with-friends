@@ -1,0 +1,939 @@
+/* ============================================================
+   CAVING WITH FRIENDS
+
+   Upstream's monospace look, plus the lobby, scoreboard and
+   results views that multiplayer needs.
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: monospace;
+    background: #f4f4f4;
+    color: #111;
+    overflow: hidden;
+}
+
+
+/* =========================
+   VIEWS
+
+   Exactly one is visible at a time.
+   ========================= */
+
+.view {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.view.active {
+    display: flex;
+}
+
+#home-view.active,
+#lobby-view.active,
+#results-view.active {
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+#game-view.active {
+    flex-direction: column;
+    width: min(1200px, 96vw);
+    margin: auto;
+    padding: 12px 0;
+}
+
+
+/* =========================
+   PANELS  (home, lobby, results)
+   ========================= */
+
+.panel {
+    width: min(460px, 92vw);
+    margin: 40px 0;
+    padding: 24px;
+
+    background: white;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+}
+
+.panel.wide {
+    width: min(900px, 94vw);
+}
+
+.panel h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.panel h2 {
+    margin: 18px 0 8px;
+    font-size: 15px;
+}
+
+.panel hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+.tagline {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.hint {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    min-height: 16px;
+}
+
+.error {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #a00;
+    min-height: 18px;
+}
+
+
+/* =========================
+   FORM CONTROLS
+   ========================= */
+
+.field {
+    display: block;
+    margin-top: 12px;
+}
+
+.field span {
+    display: block;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+/* A checkbox reads better beside its label than above it. */
+
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-field input {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-field span {
+    margin-bottom: 0;
+    font-size: 13px;
+    color: #333;
+}
+
+
+input, select, button {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+
+    background: white;
+    color: #111;
+
+    border: 1px solid #999;
+    border-radius: 4px;
+}
+
+button {
+    padding: 9px 16px;
+
+    background: white;
+    color: #111;
+
+    border: 1px solid #999;
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #eee;
+}
+
+button:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+button.primary {
+    width: 100%;
+    margin-top: 14px;
+    font-weight: bold;
+}
+
+button.quiet {
+    margin-top: 20px;
+    border-color: #ddd;
+    color: #777;
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.join-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.join-row button {
+    flex-shrink: 0;
+}
+
+#code-input {
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-weight: bold;
+}
+
+#share-link {
+    font-size: 12px;
+    color: #555;
+}
+
+
+/* =========================
+   LOBBY
+   ========================= */
+
+#lobby-code {
+    letter-spacing: 4px;
+}
+
+.player-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.player-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 7px 2px;
+    border-bottom: 1px solid #eee;
+
+    font-size: 14px;
+}
+
+.player-tags {
+    font-size: 11px;
+    color: #777;
+}
+
+.player-tags .ready {
+    color: #2a7;
+    font-weight: bold;
+}
+
+.player-tags .away {
+    color: #b80;
+}
+
+
+/* =========================
+   GAME HEADER
+   ========================= */
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+}
+
+#header h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: normal;
+    color: #555;
+}
+
+#stats {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* The way out of a round, small enough not to invite a misclick. */
+
+#game-leave {
+    margin-top: 0;
+}
+
+#timer {
+    min-width: 55px;
+    text-align: right;
+}
+
+#timer.low {
+    color: #a00;
+}
+
+
+/* =========================
+   CURRENT WORD
+   ========================= */
+
+#current-word-container {
+    height: 45px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+#current-word {
+    height: 28px;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+#message {
+    height: 17px;
+    font-size: 13px;
+}
+
+
+/* =========================
+   BOARD AND SCOREBOARD
+   ========================= */
+
+#game-body {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    gap: 10px;
+}
+
+/*
+    Five columns whatever the word count, with as many rows as
+    that needs. --puzzle-rows is set from JS; see
+    applyPuzzleCount in ui.js.
+*/
+
+#puzzles {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(var(--puzzle-rows, 2), minmax(0, 1fr));
+
+    gap: 8px;
+}
+
+#scoreboard {
+    width: 190px;
+    flex-shrink: 0;
+
+    background: white;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+
+    padding: 8px;
+    overflow-y: auto;
+}
+
+.scoreboard-title {
+    font-size: 11px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+#scoreboard-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#scoreboard-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+#scoreboard-list li.you .scoreboard-name {
+    font-weight: bold;
+}
+
+#scoreboard-list li.away {
+    opacity: 0.45;
+}
+
+.scoreboard-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.scoreboard-score {
+    font-weight: bold;
+}
+
+/*
+    Ten dots per player: which puzzles they have, never which
+    words they used.
+*/
+
+/*
+    One column per puzzle, the same columns for every player,
+    with a numbered header above them. The columns are what
+    make a glance down the board possible.
+*/
+
+/* One column per puzzle. --puzzle-count is set from JS. */
+
+.marks {
+    display: grid;
+    grid-template-columns: repeat(var(--puzzle-count, 10), 1fr);
+    gap: 2px;
+    margin-top: 3px;
+}
+
+.marks.legend {
+    margin: 4px 0 2px;
+}
+
+.mark-number {
+    font-size: 8px;
+    line-height: 1;
+    color: #999;
+    text-align: center;
+}
+
+.mark {
+    height: 10px;
+    border-radius: 2px;
+    background: #e2e2e2;
+    border: 1px solid #d0d0d0;
+}
+
+.mark.solved {
+    background: #4a4;
+    border-color: #3d8c3d;
+}
+
+/* Your own row is the one you look for, so its marks read stronger. */
+
+#scoreboard-list li.you .mark.solved {
+    background: #2f7d32;
+    border-color: #245c26;
+}
+
+
+/* =========================
+   PUZZLE CARDS
+   ========================= */
+
+.puzzle {
+    min-height: 0;
+
+    background: white;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+
+    padding: 8px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+.puzzle.solved {
+    background: #e8e8e8;
+}
+
+/* Shared mode: someone else holds this one. */
+.puzzle.theirs {
+    background: #ededf0;
+    border-color: #c2c2c8;
+}
+
+.puzzle.mine {
+    background: #e9f3e9;
+    border-color: #9ac59a;
+}
+
+.puzzle-number {
+    color: #777;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.puzzle-word {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin: 2px 0;
+    flex-shrink: 0;
+}
+
+.puzzle-status {
+    font-size: 11px;
+    color: #555;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/*
+    Race mode: the names under a rack say who already has that
+    puzzle. Yours is picked out, since that is the one you are
+    checking for.
+*/
+
+.solver-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+
+    font-size: 10px;
+    color: #555;
+    line-height: 1.3;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.solver-chip {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.solver-chip.mine {
+    color: #2f7d32;
+    font-weight: bold;
+}
+
+.solver-chip-gap {
+    color: #bbb;
+}
+
+.puzzle-holder {
+    font-size: 11px;
+    color: #36c;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+
+/*
+    Shared mode: a puzzle somebody else took is out of reach,
+    so its word is greyed and only the holder's name is said
+    plainly. Your own stays in full colour.
+*/
+
+.puzzle.theirs .solution-word,
+.puzzle.theirs .solution-total,
+.puzzle.theirs .solution-rank,
+.puzzle.theirs .score-line,
+.puzzle.theirs .score-label {
+    color: #9a9a9a;
+}
+
+.puzzle.theirs .puzzle-holder {
+    color: #6b7280;
+}
+
+.puzzle.mine .puzzle-holder {
+    color: #2f7d32;
+    font-weight: bold;
+}
+
+
+/* =========================
+   SOLUTION BREAKDOWN
+   ========================= */
+
+.solution {
+    margin-top: 5px;
+    width: 100%;
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.3;
+    flex-shrink: 0;
+}
+
+.solution-word {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.solution-total {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+/*
+    The arithmetic behind a solved card's number.
+*/
+
+.score-breakdown {
+    margin-top: 4px;
+    padding-top: 3px;
+    border-top: 1px solid #ddd;
+}
+
+.score-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+}
+
+.score-label {
+    color: #666;
+}
+
+
+/* =========================
+   RESULTS SOLVER LIST
+
+   Every player's answer to one puzzle, on the card itself.
+   ========================= */
+
+.solvers {
+    margin-top: 6px;
+    width: 100%;
+    font-size: 11px;
+    line-height: 1.4;
+    border-top: 1px solid #ddd;
+    padding-top: 4px;
+    flex-shrink: 0;
+}
+
+.solver {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.solver.mine {
+    font-weight: bold;
+}
+
+.solver-name {
+    color: #666;
+    flex-shrink: 0;
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.solver-word {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.solver-points {
+    color: #333;
+    flex-shrink: 0;
+}
+
+.solvers-empty {
+    color: #999;
+    text-align: center;
+}
+
+
+/* =========================
+   RESULTS
+   ========================= */
+
+.results-list {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.results-list li {
+    padding: 6px 0;
+    font-size: 15px;
+}
+
+.results-list .results-score {
+    font-weight: bold;
+    float: right;
+}
+
+.results-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.results-actions button {
+    flex: 1;
+    margin-top: 0;
+}
+
+#results-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#results-board .puzzle {
+    min-height: 120px;
+}
+
+.answers-container {
+    margin-top: 6px;
+    width: 100%;
+}
+
+.show-answers {
+    width: 100%;
+    font-size: 11px;
+    padding: 4px;
+}
+
+.answers {
+    margin-top: 6px;
+    font-size: 10px;
+    line-height: 1.4;
+    max-height: 140px;
+    overflow-y: auto;
+    text-align: left;
+    color: #444;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================
+   COUNTDOWN OVERLAY
+   ========================= */
+
+#countdown-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+
+    background: rgba(244, 244, 244, 0.92);
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 60;
+}
+
+#countdown-overlay.visible {
+    display: flex;
+}
+
+#countdown-number {
+    font-size: 96px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   CONNECTION WARNING
+   ========================= */
+
+#connection-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    padding: 6px;
+
+    background: #a00;
+    color: white;
+
+    font-size: 12px;
+    text-align: center;
+
+    z-index: 80;
+}
+
+#connection-warning.visible {
+    display: block;
+}
+
+
+/* =========================
+   MOBILE KEYBOARD
+   ========================= */
+
+#mobile-keyboard {
+    display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+
+    #mobile-keyboard.visible {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+
+        display: grid;
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 4px;
+
+        padding: 6px;
+        background: #f4f4f4;
+        border-top: 1px solid #bbb;
+
+        touch-action: manipulation;
+    }
+
+    .mobile-key {
+        min-width: 0;
+        height: 42px;
+        padding: 0;
+
+        font-size: 16px;
+        font-weight: bold;
+
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .mobile-key:active {
+        background: #ddd;
+    }
+
+    .mobile-key.enter {
+        grid-column: span 3;
+    }
+
+    #game-view.active {
+        padding-bottom: 150px;
+    }
+}
+
+
+/* =========================
+   NARROW SCREENS
+   ========================= */
+
+@media (max-width: 800px) {
+
+    body {
+        overflow: auto;
+    }
+
+    #game-view.active {
+        height: auto;
+        min-height: 100%;
+    }
+
+    #game-body {
+        flex-direction: column-reverse;
+    }
+
+    /* The header carries a button now, so it needs the room. */
+    #stats {
+        gap: 14px;
+    }
+
+    #scoreboard {
+        width: 100%;
+        max-height: 150px;
+    }
+
+    #puzzles {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: minmax(170px, auto);
+    }
+
+    .puzzle {
+        overflow-y: auto;
+    }
+
+    /* Keep the typed word visible while the board scrolls. */
+    #current-word-container {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: #f4f4f4;
+        border-bottom: 1px solid #bbb;
+    }
+
+    #results-board {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.solution-rank {
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+}
+
+
+/* =========================
+   NEW BOARD VOTE
+   ========================= */
+
+#refresh-button {
+    display: none;
+    width: 100%;
+    margin-top: 10px;
+    padding: 6px;
+    font-size: 11px;
+}
+
+#refresh-button.voted {
+    background: #e9f3e9;
+    border-color: #9ac59a;
+    font-weight: bold;
+}
+
+#refresh-note {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #888;
+    line-height: 1.3;
+}
