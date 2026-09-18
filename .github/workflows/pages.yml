@@ -39,6 +39,14 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      # Pages sends "cache-control: max-age=600" on everything and
+      # offers no way to change it, so a returning player can be
+      # running an old copy of the code. Stamping every reference
+      # with the commit means the browser has to fetch what it has
+      # not seen, and can never mix new code with an old module.
+      - name: Stamp the code with this commit
+        run: node deploy/stamp.mjs "${GITHUB_SHA:0:8}"
+
       - name: Upload the game
         uses: actions/upload-pages-artifact@v3
         with:
